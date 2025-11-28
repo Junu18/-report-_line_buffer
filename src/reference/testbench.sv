@@ -37,7 +37,10 @@ module testbench;
   `include "sync_gen.sv"
 
   
-   line_buf_ctrl_top u_line_buf_ctrl_top(
+   line_buf_ctrl_top #(
+    .HTOT       (HTOT    ),
+    .HACT       (HACT    )
+   ) u_line_buf_ctrl_top(
     .clk        (w_pclk  ),
     .rstn       (r_rst_n ),
     .i_vsync    (r_vsync ),
@@ -51,7 +54,7 @@ module testbench;
     .o_de       (w_de    ),
     .o_r_data   (w_red   ),
     .o_g_data   (w_green ),
-    .o_b_data   (w_blue  ) 
+    .o_b_data   (w_blue  )
    );
   
   initial begin
