@@ -37,7 +37,10 @@ module testbench;
   `include "sync_gen.sv"
 
   
-   line_buf_ctrl_top u_line_buf_ctrl_top(
+   line_buf_ctrl_top #(
+    .HTOT       (HTOT    ),
+    .HACT       (HACT    )
+   ) u_line_buf_ctrl_top(
     .clk        (w_pclk  ),
     .rstn       (r_rst_n ),
     .i_vsync    (r_vsync ),
@@ -51,7 +54,7 @@ module testbench;
     .o_de       (w_de    ),
     .o_r_data   (w_red   ),
     .o_g_data   (w_green ),
-    .o_b_data   (w_blue  ) 
+    .o_b_data   (w_blue  )
    );
   
   initial begin
@@ -76,8 +79,32 @@ module testbench;
     $dumpfile("dump.vcd");
     $dumpvars(0, testbench);
   end
-  
-  
+
+  // Monitor key signals for verification
+  initial begin
+    $display("================================================================================");
+    $display("Line Buffer Controller - Detailed Simulation Monitor");
+    $display("================================================================================");
+    $monitor("Time=%0t | State=%0d | i_de=%b o_de=%b | RAM0_WE=%b RAM1_WE=%b | pixel_cnt=%0d | i_r=%0d o_r=%0d",
+             $time,
+             u_line_buf_ctrl_top.u_line_buf_ctrl.state,
+             r_de, w_de,
+             u_line_buf_ctrl_top.u_line_buf_ctrl.o_ram0_we,
+             u_line_buf_ctrl_top.u_line_buf_ctrl.o_ram1_we,
+             u_line_buf_ctrl_top.u_line_buf_ctrl.pixel_cnt,
+             r_red, w_red);
+  end
+
+  // Report state transitions
+  always @(u_line_buf_ctrl_top.u_line_buf_ctrl.state) begin
+    case(u_line_buf_ctrl_top.u_line_buf_ctrl.state)
+      2'b00: $display("[%0t] STATE CHANGE: ST_LINE0_WR (Writing to SRAM1)", $time);
+      2'b01: $display("[%0t] STATE CHANGE: ST_LINE1_WR (Writing to SRAM2)", $time);
+      2'b10: $display("[%0t] STATE CHANGE: ST_LINE0_WR_RD (Writing to SRAM1, Reading from SRAM2)", $time);
+      2'b11: $display("[%0t] STATE CHANGE: ST_LINE1_WR_RD (Writing to SRAM2, Reading from SRAM1)", $time);
+    endcase
+  end
+
 endmodule
 
 
